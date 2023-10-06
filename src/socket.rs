@@ -6,10 +6,11 @@
 
 use crate::{Error, StatusCode, Url};
 use async_tungstenite::{
-    async_std::{connect_async, ConnectStream},
+    async_std::{connect_async_with_config, ConnectStream},
     tungstenite::{http::request::Builder as RequestBuilder, Error as WsError, Message},
     WebSocketStream,
 };
+use tungstenite::protocol::WebSocketConfig;
 use futures::{
     task::{Context, Poll},
     Sink, Stream,
@@ -56,7 +57,7 @@ impl<E: Error> SocketRequest<E> {
     pub async fn connect<FromServer: DeserializeOwned, ToServer: Serialize + ?Sized>(
         self,
     ) -> Result<Connection<FromServer, ToServer, E>, E> {
-        Ok(connect_async(self.inner.body(()).unwrap())
+        Ok(connect_async_with_config(self.inner.body(()).unwrap(), Some(WebSocketConfig { max_frame_size: Some(64 << 20), ..WebSocketConfig::default() }))
             .await
             .map_err(|err| E::catch_all(StatusCode::BadRequest, err.to_string()))?
             .0

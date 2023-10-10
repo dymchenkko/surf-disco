@@ -28,7 +28,7 @@ pub struct SocketRequest<E> {
 
 impl<E> From<Url> for SocketRequest<E> {
     fn from(mut url: Url) -> Self {
-        url.set_scheme("ws").unwrap();
+        url.set_scheme("wss").unwrap();
         RequestBuilder::new().uri(url.to_string()).into()
     }
 }
